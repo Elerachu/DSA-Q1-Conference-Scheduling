@@ -1,0 +1,91 @@
+# Creates test session data for timing experiments with no CSV needed,
+# these functions return session dicts directly, in the same format
+# load_sessions() produces (a list of {"id", "start", "end"} dicts).
+
+import random
+
+
+def generate_high_overlap(n, day_length=1440):
+    """
+    Family 1: room count grows with n.
+
+    Every session starts at time 0 and has a random, long-ish duration.
+    Since they all start at the exact same instant, they ALL overlap each
+    other at time 0 — so the peak overlap (and therefore the room count)
+    is always exactly n, no matter how big n gets.
+    """
+    sessions = []
+
+    for i in range(n):
+        start = 0
+        # A random duration; so sessions don't all end at the exact same
+        # time either keeping things realistic, doesn't change the overlap
+        # count.
+        duration = random.randint(30, day_length)
+        end = start + duration
+
+        sessions.append({
+            "id": f"H{i}",   # "H" for "high overlap" plus a number
+            "start": start,
+            "end": end,
+        })
+
+    return sessions
+
+
+def generate_fixed_rooms(n, num_rooms, min_duration=30, max_duration=90):
+    """
+    Family 2: room count stays FIXED at num_rooms, however large n gets.
+
+    Sessions are split into num_rooms separate "tracks". Within one track,
+    sessions run back-to-back with no overlap at all — each new session on
+    that track starts exactly when the previous one on that track ends.
+    Since only num_rooms tracks exist, at most num_rooms sessions can ever
+    be happening at the same moment, regardless of how many sessions total
+    are generated.
+    """
+    sessions = []
+
+    # One "current end time" tracked per track/room.
+    track_end_times = [0] * num_rooms
+
+    for i in range(n):
+        # Round-robin: session 0 goes to track 0, session 1 to track 1, ...
+        # and wraps back around (the % operator does the wrapping).
+        track = i % num_rooms
+
+        start = track_end_times[track]
+        duration = random.randint(min_duration, max_duration)
+        end = start + duration
+
+        sessions.append({
+            "id": f"F{i}",   # "F" for "fixed rooms", plus a number
+            "start": start,
+            "end": end,
+        })
+
+        # This track is now busy until `end` and the next session placed on this track will start from here.
+        track_end_times[track] = end
+
+    return sessions
+
+
+if __name__ == "__main__":
+    from lower_bound import compute_lower_bound
+    from heap_scheduler import schedule_rooms_heap
+
+    for n in [10, 100, 1000]:
+        high_overlap_sessions = generate_high_overlap(n)
+        sorted_sessions = sorted(high_overlap_sessions, key=lambda s: s["start"])
+        room_count, _ = schedule_rooms_heap(sorted_sessions)
+        bound = compute_lower_bound(high_overlap_sessions)
+        print(f"[high overlap] n={n}: rooms={room_count}, lower_bound={bound}")
+
+    print()
+
+    for n in [10, 100, 1000]:
+        fixed_sessions = generate_fixed_rooms(n, num_rooms=5)
+        sorted_sessions = sorted(fixed_sessions, key=lambda s: s["start"])
+        room_count, _ = schedule_rooms_heap(sorted_sessions)
+        bound = compute_lower_bound(fixed_sessions)
+        print(f"[fixed rooms] n={n}: rooms={room_count}, lower_bound={bound}")
