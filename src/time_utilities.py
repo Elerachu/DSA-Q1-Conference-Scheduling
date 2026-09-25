@@ -28,4 +28,4 @@ if __name__ == "__main__":
     # Quick manual test: Run this file on its own to check the function works.
     print(time_to_minutes("09:00"))   # print 540
     print(time_to_minutes("10:00"))   # print 600
-    print(time_to_minutes("22:50"))   # print 1320
+    print(time_to_minutes("22:50"))   # print 1370
