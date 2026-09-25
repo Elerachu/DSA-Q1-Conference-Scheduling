@@ -1,6 +1,6 @@
 # Q1: Rooms for a Multi-Track Event
 
-DSA final project (COMS-RW-20515) — greedy room scheduling using a min-heap,
+DSA final project (COMS-RW-20515): greedy room scheduling using a min-heap,
 compared against a list-scan baseline.
 
 ## How to run
@@ -26,4 +26,4 @@ compared against a list-scan baseline.
 ## Data
 
 - data/Q1_sessions_main.csv       — 40 supplied sessions
-- data/Q1_sessions_selfcheck.csv  — 8 sessions, must resolve to 3 rooms
+- data/Q1_sessions_selfcheck.csv  — 8 sessions must resolve to 3 rooms
