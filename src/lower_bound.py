@@ -30,27 +30,6 @@ def compute_lower_bound(sessions):
     return max_overlap
 
 
-def compute_typed_lower_bound(sessions):
-    """
-    The lower bound that stays correct once rooms have TYPES.
-
-    Split the sessions by required room type and find the peak overlap WITHIN
-    each type, then add them up. A room of the wrong type is not a free room,
-    so the peaks of different types cannot share.
-
-    On an instance where every room is interchangeable this gives the same
-    answer as compute_lower_bound. On a typed instance it can be strictly
-    larger, and it is the bound greedy actually attains.
-    """
-    sessions_by_type = {}
-
-    for session in sessions:
-        room_type = session.get("room_type", "general")
-        sessions_by_type.setdefault(room_type, []).append(session)
-
-    return sum(compute_lower_bound(group) for group in sessions_by_type.values())
-
-
 if __name__ == "__main__":
     import sys
     from heap_scheduler import schedule_rooms_heap
