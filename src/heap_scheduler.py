@@ -1,42 +1,12 @@
 # The Algorithm: Assign conference sessions to the fewest possible rooms using a min-heap to always check the room that frees up soonest.
 
-import csv        
-import heapq        # built-in module for min-heap operations
+import heapq         # built-in module for min-heap operations
 
-from time_utilities import time_to_minutes
-
-def load_sessions(filepath):
-    """
-    Reads a CSV file of sessions and returns a list of dictionaries,
-    one per session with start and end converted to minutes.
-    """
-    sessions = []  # List with one dict per session
-
-    with open(filepath, newline="") as f:
-        reader = csv.DictReader(f)
-
-        for row in reader:
-            start = time_to_minutes(row["start"].strip())
-            end = time_to_minutes(row["end"].strip())
-
-            # Guard against malformed data: a session must take positive time. 
-            # My optimality proof assumes this is true and if it isn't true, the proof and the algorithm can't be trusted.
-            if start >= end:
-
-            # A bad row that slips through could throw off the room count with no clue why
-            # So I raise an exception with a clear message instead of silently ignoring it.
-                raise ValueError(
-                    f"Session {row['session_id']} has start >= end "
-                    f"({row['start']} -> {row['end']})"
-                )
-
-            sessions.append({
-                "id": row["session_id"],
-                "start": start,
-                "end": end,
-            })
-
-    return sessions
+# One place knows how to read the CSV: both schedulers and the lower bound
+# check import the same load_sessions from here instead of each keeping their
+# own copy, so a change to the loading rules can't silently apply to one
+# algorithm and not the other.
+from session_loader import load_sessions
 
 
 def schedule_rooms_heap(sorted_sessions, operation_counter=None):

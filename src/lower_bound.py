@@ -44,7 +44,7 @@ if __name__ == "__main__":
         lower_bound = compute_lower_bound(sessions)
         greedy_room_count, _ = schedule_rooms_heap(sorted_sessions)
 
-        print(f"Lower bound Maximum` overlap): {lower_bound}")
+        print(f"Lower bound (maximum overlap): {lower_bound}")
         print(f"Greedy room count: {greedy_room_count}")
 
         if lower_bound == greedy_room_count:
