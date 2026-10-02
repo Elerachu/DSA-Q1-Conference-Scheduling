@@ -74,6 +74,18 @@ Check that the fixed-rooms ratio is stable across five separate runs:
 python tests/5000_n_reruns.py
 ```
 
+Run the room-type extension tests:
+
+```bash
+python tests/typed_test.py
+```
+
+See the counterexample where `R = M` stops holding, on its own:
+
+```bash
+python src/typed_scheduler.py
+```
+
 Generate the time vs n plots (run `measure.py` first). Requires matplotlib,
 see `requirements.txt`:
 
@@ -92,7 +104,8 @@ python src/plot_results.py
 - `src/heap_scheduler.py` — min-heap greedy algorithm, O(n log n).
 - `src/list_scheduler.py` — list-scan baseline, O(n x r).
 - `src/lower_bound.py` — independent max-overlap check used to confirm
-  optimality.
+  optimality, plus `compute_typed_lower_bound` for the room-type extension.
+- `src/typed_scheduler.py` — room-type extension: one min-heap per room type.
 - `src/generators.py` — generates the two families of test instances from a
   fixed seed so results are reproducible.
 - `src/measure.py` — timing, operation count and room count comparison.
@@ -104,6 +117,34 @@ python src/plot_results.py
   overlap, heap/list agreement, optimality against the lower bound.
 - `tests/5000_n_reruns.py` — repeats the fixed-rooms n=5000 measurement five
   times to show the ratio is stable and reproducible.
+- `tests/typed_test.py` — room-type extension, including the counterexample
+  where the optimality result `R = M` fails.
+
+## Room-type extension
+
+`src/typed_scheduler.py` adds required room types. Each session may carry a
+`room_type` key, and the algorithm keeps one min-heap per type, so a room of the
+wrong type is never treated as free.
+
+The interesting result is what happens to the optimality proof. The report
+proves `R = M`, where `M` is the maximum number of sessions running at any
+single instant. That equality depends on all rooms being interchangeable. It
+fails as soon as rooms have types:
+
+| Time | Running | Needs |
+|---|---|---|
+| 09:00–10:00 | 2 seminars | 2 seminar rooms |
+| 11:00–12:00 | 3 labs | 3 lab rooms |
+
+The overall peak overlap `M` is 3 (three labs at 11:00), but 5 rooms are
+actually needed, because the two seminar rooms are busy at 09:00 and idle at
+11:00, so they cannot be reused for the labs. So `R = M` becomes `R = 5` and
+`M = 3`.
+
+Overall peak overlap is still a valid lower bound, just a weak one. The bound
+that greedy actually attains once rooms have types is the sum over room types
+of the peak overlap within that type, which is `2 + 3 = 5` here. Greedy remains
+optimal against that bound, and stays O(n log n).
 
 ### Data
 
